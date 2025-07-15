@@ -124,8 +124,8 @@
     </v-container>
 </template>
 
-<script setup>
-  import { computed, ref } from 'vue';
+<script setup lang="ts">
+  import { ref } from 'vue';
 
   let created_at = new Date();
 
