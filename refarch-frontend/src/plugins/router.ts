@@ -1,9 +1,10 @@
 // Composables
 import { createRouter, createWebHashHistory } from "vue-router";
 
-import { ROUTES_GETSTARTED, ROUTES_HOME } from "@/constants";
+import { ROUTES_GETSTARTED, ROUTES_HOME, ROUTES_TODO } from "@/constants";
 import GetStartedView from "@/views/GetStartedView.vue";
 import HomeView from "@/views/HomeView.vue";
+import TodoView from "@/views/TodoView.vue";
 
 const routes = [
   {
@@ -17,6 +18,11 @@ const routes = [
     name: ROUTES_GETSTARTED,
     component: GetStartedView,
   },
+  {
+      path: "/todoapp",
+      name: ROUTES_TODO,
+      component: TodoView,
+    },
   { path: "/:catchAll(.*)*", redirect: "/" }, // CatchAll route
 ];
 
