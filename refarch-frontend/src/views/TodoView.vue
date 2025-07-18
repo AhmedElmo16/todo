@@ -49,6 +49,7 @@
                 v-model="finish_until"
                 label="Finish until"
                 clearable
+                display-format="fullDateWithWeekday"
               ></v-date-input>
             </v-col>
 
@@ -118,10 +119,12 @@
               cols="12"
               md="4"
             >
-              <v-text-field
+              <v-date-input
                 v-model="finish_until"
                 label="Finish until"
-              ></v-text-field>
+                clearable
+                display-format="fullDateWithWeekday"
+              ></v-date-input>
             </v-col>
 
             <v-col
@@ -200,18 +203,6 @@
         <!-- Tables -->
         <h2 class="mb-4">Todo</h2>
         <v-data-table :headers="headers" :items="tasks" v-if="current" class="mb-16" no-data-text="No tasks added yet">
-          <template v-slot:headers="">
-            <tr>
-              <td><h3 class="text-blue">Done</h3></td>
-              <td><h3 class="text-blue">Title</h3></td>
-              <td><h3 class="text-blue">Description</h3></td>
-              <td><h3 class="text-blue">Finish until</h3></td>
-              <td><h3 class="text-blue">Priority</h3></td>
-              <td><h3 class="text-blue">Categories</h3></td>
-              <td><h3 class="text-blue">Created at</h3></td>
-            </tr>
-          </template>
-
           <template v-slot:item="{ item }">
             <tr>
               <td><v-checkbox @click="completeTask(item)"></v-checkbox></td>
@@ -226,22 +217,9 @@
             </tr>
           </template>
         </v-data-table>
-
-
+        
         <h2 class="mb-4">Completed</h2>
         <v-data-table :headers="headers" :items="completedTasks" v-if="current" class="mb-16" no-data-text="No tasks added yet">
-          <template v-slot:headers="">
-            <tr>
-              <td><h3 class="text-blue">Done</h3></td>
-              <td><h3 class="text-blue">Title</h3></td>
-              <td><h3 class="text-blue">Description</h3></td>
-              <td><h3 class="text-blue">Finish until</h3></td>
-              <td><h3 class="text-blue">Priority</h3></td>
-              <td><h3 class="text-blue">Categories</h3></td>
-              <td><h3 class="text-blue">Created at</h3></td>
-            </tr>
-          </template>
-
           <template v-slot:item="{ item }">
             <tr>
               <td class="text-black"><v-checkbox :model-value="true" @click="uncompleteTask(item)"></v-checkbox></td>
@@ -260,8 +238,10 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { onMounted, ref } from 'vue';
   import { useDate } from 'vuetify';
+  import { VDateInput } from "vuetify/labs/components";
+  import { VCalendar } from 'vuetify/labs/VCalendar'
 
   const valid = ref(false);
   const date = useDate();
@@ -310,10 +290,14 @@
 
   const taskId = ref(1);
 
+  const finish_date = ref('');
+
   function addNewTask(name, description, finish_until, priority, categories) {
    if(name != '') {
     warning.value = false;
     created_at = date.format(new Date(), 'fullDateTime');
+
+    finish_date.value = date.format(finish_until, 'fullDateWithWeekday');
 
     tasks.value.push(
         {
@@ -321,7 +305,7 @@
           checked: false,
           name: name,
           description: description,
-          finish_until: finish_until,
+          finish_until: finish_date.value,
           priority: priority,
           categories: categories,
           created_at: created_at,
@@ -390,7 +374,12 @@
   const progress = ref(100);
 
   function updateProgressBar() {
-    progress.value = (numberCompletedTasks.value / numberTasks.value) * 100;
+    if(numberTasks.value == 0) {
+      progress.value = 100;
+    }
+    else {
+      progress.value = (numberCompletedTasks.value / numberTasks.value) * 100;
+    }
   }
 
 
@@ -417,12 +406,14 @@
 
   function editTaskPost(task, name, description, finish_until, priority, categories) {
     if(name != '') {
+      finish_date.value = date.format(finish_until, 'fullDateWithWeekday');
+
       if(task.checked) {
         editWarning.value = false;
 
         completedTasks.value[completedTasks.value.indexOf(task)].name = name;
         completedTasks.value[completedTasks.value.indexOf(task)].description = description;
-        completedTasks.value[completedTasks.value.indexOf(task)].finish_until = finish_until;
+        completedTasks.value[completedTasks.value.indexOf(task)].finish_until = finish_date;
         completedTasks.value[completedTasks.value.indexOf(task)].priority = priority;
         completedTasks.value[completedTasks.value.indexOf(task)].categories = categories;
       }
@@ -431,7 +422,7 @@
 
         tasks.value[tasks.value.indexOf(task)].name = name;
         tasks.value[tasks.value.indexOf(task)].description = description;
-        tasks.value[tasks.value.indexOf(task)].finish_until = finish_until;
+        tasks.value[tasks.value.indexOf(task)].finish_until = finish_date;
         tasks.value[tasks.value.indexOf(task)].priority = priority;
         tasks.value[tasks.value.indexOf(task)].categories = categories;
       }
